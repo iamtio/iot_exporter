@@ -1,0 +1,63 @@
+# helm upgrade -i -f charts/examples/zigbee2mqtt.yaml ie charts/iot-exporter
+image:
+  repository: iamtio/iot_exporter
+  tag: "master"
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/path: /metrics
+  prometheus.io/port: "9999"
+
+config:
+  'zigbee2mqtt/+':
+    - name: zigbee_link_quality
+      match: '^zigbee2mqtt/([^/]+)$'
+      value: '{{ .Payload.linkquality }}'
+      labels:
+        instance: '{{ index .Matches 1 }}'
+    - name: zigbee_battery
+      match: '^zigbee2mqtt/([^/]+)$'
+      value: '{{ .Payload.battery }}'
+      labels:
+        instance: '{{ index .Matches 1 }}'
+    - name: zigbee_voltage
+      match: '^zigbee2mqtt/([^/]+)$'
+      value: '{{ $v := .Payload.voltage }}{{ if gt $v 300.0 }}{{ divf $v 1000 }}{{ else }}{{$v}}{{ end }}'
+      labels:
+        instance: '{{ index .Matches 1 }}'      
+    - name: zigbee_temperature
+      match: '^zigbee2mqtt/([^/]+)$'
+      value: '{{ .Payload.temperature }}'
+      labels:
+        instance: '{{ index .Matches 1 }}'
+        type: sensor_temperature
+    - name: zigbee_humidity
+      match: '^zigbee2mqtt/([^/]+)$'
+      value: '{{ .Payload.humidity }}'
+      labels:
+        instance: '{{ index .Matches 1 }}'
+        type: sensor_humidity
+    - name: zigbee_contact
+      match: '^zigbee2mqtt/([^/]+)$'
+      value: '{{ $v := .Payload.contact }}{{ if eq (printf "%T" $v) "bool" }}{{ if $v }}1{{ else }}0{{ end }}{{ end }}'
+      labels:
+        instance: '{{ index .Matches 1 }}'
+        type: sensor_magnet
+    - name: zigbee_occupancy
+      match: '^zigbee2mqtt/([^/]+)$'
+      value: '{{ $v := .Payload.occupancy }}{{ if eq (printf "%T" $v) "bool" }}{{ if $v }}1{{ else }}0{{ end }}{{ end }}'
+      labels:
+        instance: '{{ index .Matches 1 }}'
+        type: sensor_motion
+    - name: zigbee_switch
+      match: '^zigbee2mqtt/([^/]+)$'
+      value: '{{ $v := .Payload.state }}{{ if eq (printf "%T" $v) "string" }}{{ if eq $v "ON" }}1{{ else if eq $v "OFF"}}0{{ end }}{{ end }}'
+      labels:
+        instance: '{{ index .Matches 1 }}'
+        type: switch
+    - name: zigbee_power
+      match: '^zigbee2mqtt/([^/]+)$'
+      value: '{{ .Payload.power }}'
+      labels:
+        instance: '{{ index .Matches 1 }}'
+        type: switch
