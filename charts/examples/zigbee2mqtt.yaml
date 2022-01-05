@@ -61,3 +61,15 @@ config:
       labels:
         instance: '{{ index .Matches 1 }}'
         type: switch
+    - name: zigbee_light
+      match: '^zigbee2mqtt/([^/]+)$'
+      value: '{{ .Payload.illuminance }}'
+      labels:
+        instance: '{{ index .Matches 1 }}'
+        type: sensor_light        
+    - name: zigbee_light_lux
+      match: '^zigbee2mqtt/([^/]+)$'
+      value: '{{ .Payload.illuminance_lux }}'
+      labels:
+        instance: '{{ index .Matches 1 }}'
+        type: sensor_light
